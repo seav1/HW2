@@ -1,0 +1,48 @@
+# This is a basic workflow to help you get started with Actions
+name: H
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+#  push:
+#    branches: [ "main" ]
+#  pull_request:
+#    branches: [ "main" ]
+  schedule:
+    # UTC (国内 UTC+8)
+    - cron: '05 10 * * *'
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    # 超时设置
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+          
+#       - name: Setup WARP  # Just for reCAPTCHA Google block debug
+#         run: |
+#           git clone -b main https://github.com/P3TERX/warp.sh ~/warp
+#           cd ~/warp
+#           sudo bash ./warp.sh wg4
+
+      - name: Setup FFmpeg using versions
+        uses: Iamshankhadeep/setup-ffmpeg@v1.2
+        
+      - name: Setup Environment
+        run: |
+          pip install --upgrade pip
+          pip install Pillow pyscreenshot
+          pip install -r ./requirements.txt
+          
+      - name: 'Renew'
+        env:
+          URL_BASE: ${{ secrets.URL_BASE_H }}
+          USERNAME: ${{ secrets.USERNAME }}
+          PASSWORD: ${{ secrets.PASSWORD }}
+          BARK_TOKEN: ${{ secrets.BARK_TOKEN }}
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_USER_ID: ${{ secrets.TG_USER_ID }}
+        run: |  
+          xvfb-run python3 ./main.py

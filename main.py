@@ -37,12 +37,9 @@ def recaptcha():
         sb.assert_text('Login', 'h2', timeout=20)
         print('- access')
     except Exception as e:
-        print('- 👀 sb.open() issue:', e, '\n try again!')
-        sb.driver.close()
-        #sb.open(urlLogin)
-        urlOpen(urlLogin)
-        sb.assert_text('Login', 'h2', timeout=20)
-        print('- access')
+        print('- 👀 sb.open() issue: %s \nwhen open: %s' % (e,sb.get_current_url()))
+        #sb.driver.close()
+        return False
     #   reCAPTCHA
     sb.switch_to_frame('[src*="/recaptcha/api2/anchor?"]')
     print('- switch to frame checkbox')
@@ -71,6 +68,9 @@ def recaptcha():
             urllib.request.urlretrieve(src, os.getcwd() + audioMP3)
             mp3_to_wav()
             text = speech_to_text()
+            if text == '':
+                screenshot()
+                break
             sb.switch_to_window(0)
             sb.assert_text('Login', 'h2', timeout=20)
             sb.switch_to_default_content()  # Exit all iframes
@@ -143,9 +143,9 @@ def speech_to_text():
     while trySpeech <= 3:
         print('- trySpeech *', trySpeech)
         sb.open(urlSpeech)
-        sb.assert_text('Speech to text', 'h1', timeout=20)
+        sb.assert_text('Speech to text', 'h1', timeout=10)
         sb.choose_file('input[type="file"]', os.getcwd() + audioWAV)
-        sb.sleep(8)
+        sb.sleep(12)
         response = sb.get_text('[id*="speechout"]')
         print('- response:', response)
         try:
@@ -171,7 +171,10 @@ def renew():
     print('- access')
     #
     print('- fill web_address')
-    sb.type('#web_address', urlBase)
+    web_address = '#web_address'
+    sb.wait_for_element(web_address, timeout=20)
+    sb.type(web_address, urlBase)
+    print('- fill web_address done')
     #   captcha
     number1 = int(sb.find_elements('img[src]')[0].get_attribute('src').split('-')[1][0])
     number2 = int(sb.find_elements('img[src]')[1].get_attribute('src').split('-')[1][0])
